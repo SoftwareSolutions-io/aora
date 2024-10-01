@@ -1,22 +1,35 @@
+import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Image, FlatList, TouchableOpacity } from "react-native";
 
 import { icons } from "../../constants";
-import useAppwrite from "../../lib/useAppwrite";
-import { getUserPosts, signOut } from "../../lib/appwrite";
+import { getUserPosts, signOut } from "../../lib/firebase"; // Assuming firebase.js contains these functions
 import { useGlobalContext } from "../../context/GlobalProvider";
 import { EmptyState, InfoBox, VideoCard } from "../../components";
 
 const Profile = () => {
   const { user, setUser, setIsLogged } = useGlobalContext();
-  const { data: posts } = useAppwrite(() => getUserPosts(user.$id));
+  const [posts, setPosts] = useState([]);
+
+  // Fetch user posts from Firebase
+  const fetchUserPosts = async () => {
+    try {
+      const data = await getUserPosts(user.uid); // Assuming Firebase uses uid for user ID
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserPosts();
+  }, [user]);
 
   const logout = async () => {
     await signOut();
     setUser(null);
     setIsLogged(false);
-
     router.replace("/sign-in");
   };
 
@@ -24,7 +37,7 @@ const Profile = () => {
     <SafeAreaView className="bg-primary h-full">
       <FlatList
         data={posts}
-        keyExtractor={(item) => item.$id}
+        keyExtractor={(item) => item.id} // Assuming Firebase posts use 'id' as the key
         renderItem={({ item }) => (
           <VideoCard
             title={item.title}

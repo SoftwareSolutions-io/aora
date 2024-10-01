@@ -29,11 +29,8 @@ const RootLayout = () => {
     }
   }, [fontsLoaded, error]);
 
+  // Only show the app when fonts are loaded.
   if (!fontsLoaded) {
-    return null;
-  }
-
-  if (!fontsLoaded && !error) {
     return null;
   }
 

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-
-import { getCurrentUser } from "../lib/appwrite";
+import auth from "@react-native-firebase/auth";
 
 const GlobalContext = createContext();
 export const useGlobalContext = () => useContext(GlobalContext);
@@ -11,22 +10,22 @@ const GlobalProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getCurrentUser()
-      .then((res) => {
-        if (res) {
-          setIsLogged(true);
-          setUser(res);
-        } else {
-          setIsLogged(false);
-          setUser(null);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    // Firebase auth state listener
+    const subscriber = auth().onAuthStateChanged((user) => {
+      if (user) {
+        setIsLogged(true);
+        setUser(user);
+      } else {
+        setIsLogged(false);
+        setUser(null);
+      }
+      setLoading(false); // loading ends once auth state is resolved
+    });
+
+    // Cleanup the subscriber on component unmount
+    return () => {
+      subscriber(); // correctly call the subscriber as cleanup
+    };
   }, []);
 
   return (

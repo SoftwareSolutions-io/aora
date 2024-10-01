@@ -13,12 +13,12 @@ import {
 } from "react-native";
 
 import { icons } from "../../constants";
-import { createVideoPost } from "../../lib/appwrite";
+import { createVideoPost } from "../../lib/firebase"; // Import Firebase logic here
 import { CustomButton, FormField } from "../../components";
 import { useGlobalContext } from "../../context/GlobalProvider";
 
 const Create = () => {
-  const { user } = useGlobalContext();
+  const { user } = useGlobalContext(); // Current user from Firebase context
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -27,6 +27,7 @@ const Create = () => {
     prompt: "",
   });
 
+  // Function to open DocumentPicker for video and image
   const openPicker = async (selectType) => {
     const result = await DocumentPicker.getDocumentAsync({
       type:
@@ -39,14 +40,14 @@ const Create = () => {
       if (selectType === "image") {
         setForm({
           ...form,
-          thumbnail: result.assets[0],
+          thumbnail: result,
         });
       }
 
       if (selectType === "video") {
         setForm({
           ...form,
-          video: result.assets[0],
+          video: result,
         });
       }
     } else {
@@ -56,6 +57,7 @@ const Create = () => {
     }
   };
 
+  // Submit function to handle uploading data to Firebase
   const submit = async () => {
     if (
       (form.prompt === "") |
@@ -68,9 +70,10 @@ const Create = () => {
 
     setUploading(true);
     try {
+      // Call the Firebase function to upload the video post
       await createVideoPost({
         ...form,
-        userId: user.$id,
+        userId: user.uid, // Firebase user ID
       });
 
       Alert.alert("Success", "Post uploaded successfully");
@@ -84,7 +87,6 @@ const Create = () => {
         thumbnail: null,
         prompt: "",
       });
-
       setUploading(false);
     }
   };

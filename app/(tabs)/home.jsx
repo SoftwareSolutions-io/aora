@@ -1,35 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlatList, Image, RefreshControl, Text, View } from "react-native";
 
 import { images } from "../../constants";
-import useAppwrite from "../../lib/useAppwrite";
-import { getAllPosts, getLatestPosts } from "../../lib/appwrite";
+import { getAllPosts, getLatestPosts } from "../../lib/firebase"; // Assuming these functions are in firebase.js
 import { EmptyState, SearchInput, Trending, VideoCard } from "../../components";
 
 const Home = () => {
-  const { data: posts, refetch } = useAppwrite(getAllPosts);
-  const { data: latestPosts } = useAppwrite(getLatestPosts);
-
+  const [posts, setPosts] = useState([]);
+  const [latestPosts, setLatestPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch all posts from Firebase
+  const fetchPosts = async () => {
+    try {
+      const data = await getAllPosts();
+      setPosts(data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
+
+  // Fetch latest posts from Firebase
+  const fetchLatestPosts = async () => {
+    try {
+      const data = await getLatestPosts();
+      setLatestPosts(data);
+    } catch (error) {
+      console.error("Error fetching latest posts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+    fetchLatestPosts();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await fetchPosts(); // Refresh all posts
     setRefreshing(false);
   };
-
-  // one flatlist
-  // with list header
-  // and horizontal flatlist
-
-  //  we cannot do that with just scrollview as there's both horizontal and vertical scroll (two flat lists, within trending)
 
   return (
     <SafeAreaView className="bg-primary">
       <FlatList
         data={posts}
-        keyExtractor={(item) => item.$id}
+        keyExtractor={(item) => item.id} // Assuming Firebase posts have 'id'
         renderItem={({ item }) => (
           <VideoCard
             title={item.title}
