@@ -43,6 +43,12 @@
             "useFrameworks": "static"
           }
         }
+      ],
+      [
+        "expo-dev-launcher",
+        {
+          "launchMode": "most-recent"
+        }
       ]
     ]
   }

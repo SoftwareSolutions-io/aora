@@ -39,3 +39,6 @@ GoogleService-Info.plist
 
 # Android APP CONFIG
 google-services.json
+
+/android
+/ios
